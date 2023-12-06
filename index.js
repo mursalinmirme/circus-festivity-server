@@ -12,7 +12,7 @@ app.get('/', async(req, res) => {
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@mursalin.bxh3q56.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -33,6 +33,7 @@ async function run() {
     const circusesCollection = client.db('circus_festivity').collection('circuses');
     const magicsCollection = client.db('circus_festivity').collection('magics');
     const ticketsCollection = client.db('circus_festivity').collection('tickets');
+    const purchaseTicketsCollection = client.db('circus_festivity').collection('purchaseTickets');
 
     app.get('/circuses', async(req, res) => {
         const result = await circusesCollection.find().toArray();
@@ -51,7 +52,19 @@ async function run() {
         res.send(result);
     })
 
+    app.get('/tickets/:ticketId', async(req, res) => {
+      const ticketId = req.params.ticketId;
+      const result = await ticketsCollection.findOne({_id: new ObjectId(ticketId)})
+      console.log(result);
+      res.send(result);
+    })
 
+    // puchse tickets
+    app.post('/purchase-ticket', async(req, res) => {
+      const ticketDtls = req.body;
+      const result = await purchaseTicketsCollection.insertOne(ticketDtls);
+      res.send(result);
+    })
 
     client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
